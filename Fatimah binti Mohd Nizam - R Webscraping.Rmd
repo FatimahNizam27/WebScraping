@@ -1,0 +1,106 @@
+---
+title: "R Webscraping"
+author: "Fatimah Nizam"
+date: "4/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Import the library needed
+```{r}
+library(selectr)
+library(xml2)
+library(rvest)
+library(stringr)
+library(jsonlite)
+```
+
+link to website 
+```{r}
+url <-"https://www.amazon.in/dp/B08L5WF8L4/ref=redir_mobile_desktop?_encoding=UTF8&aaxitk=8LXMMgZaS7fY7FFArslRPw&hsa_cr_id=9712803540902&pd_rd_plhdr=t&pd_rd_r=fcf3689f-d4d4-494d-8775-99ea28a08785&pd_rd_w=Z3FEp&pd_rd_wg=MdcaA&ref_=sbx_be_s_sparkle_td_asin_0_title"
+Amazonwebpage <- read_html(url)
+```
+
+Extract the **title** from Amazon page
+```{r}
+title_html <- html_nodes(Amazonwebpage, "h1#title")
+title <- html_text(title_html)
+head(title)
+title <- str_replace_all(title, "[\r\n]" , "")
+head(title)
+```
+
+Extract **price** from Amazon page
+```{r}
+price_html <- html_nodes(Amazonwebpage, "span#priceblock_ourprice")
+price <- html_text(price_html)
+head(price)
+price <- str_replace_all(price, "[\r\n]" , "")
+head(price)
+```
+
+Extract **product description** from Amazon Page
+```{r}
+desc_html <- html_nodes(Amazonwebpage, "div#featurebullets_feature_div")
+desc <- html_text(desc_html)
+head(desc)
+desc <- str_replace_all(desc, "[\r\n]" , "")
+head(desc)
+
+```
+
+Extract **product rating** from Amazon page
+```{r}
+rate_html <- html_nodes(Amazonwebpage, "span#acrPopover")
+rate <- html_text(rate_html)
+head(rate)
+
+# remove spaces and newlines and tabs
+rate <- str_replace_all(rate, "[\r\n]", "")
+rate <- str_trim(rate)
+head(rate)
+```
+
+
+Extract **product size** from Amazon page
+```{r}
+size_html <- html_nodes(Amazonwebpage, "div#variation_style_name")
+size_html <- html_nodes(size_html, "span.selection")
+size <- html_text(size_html)
+head(size)
+size <- str_replace_all(size, "[\r\n]", "")
+head(size)
+```
+
+Extract **product color** from Amazon page
+```{r}
+color_html <- html_nodes(Amazonwebpage, "div#variation_color_name")
+color_html <- html_nodes(color_html, "span.selection")
+color <- html_text(color_html)
+head(color)
+
+# remove tabs from text
+color <- str_trim(color)
+head(color)
+```
+
+Combine all the list to form a data
+```{r}
+product_data <- data.frame(Title = title, Price = price,Description = desc, Rating = rate, Size = size, Color = color)
+```
+
+```{r}
+#Structure of the data frame
+str(product_data)
+```
+
+Store it into JSON Format
+```{r}
+json_data <- toJSON(product_data)
+cat(json_data)
+```
+
+
